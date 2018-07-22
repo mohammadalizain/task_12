@@ -2,9 +2,17 @@ from django.shortcuts import render, redirect
 from .models import Restaurant, Item
 from .forms import RestaurantForm, ItemForm, SignupForm, SigninForm
 from django.contrib.auth import login, authenticate, logout
-
+from django.db.models import Q
 def no_access(request):
     return render(request, 'no_access.html')
+
+def RestaurantForm(request):
+    articles = Article.objects.all()
+    context = {
+        "Restaurant": articles,
+    }
+    return render(request, 'list.html', context)
+
 
 def signup(request):
     form = SignupForm()
@@ -46,10 +54,16 @@ def signout(request):
     return redirect("signin")
 
 def restaurant_list(request):
+    query = request.GET.get("q")
+    print(query)
+    restaurants = Restaurant.objects.all()
+    if query:
+        restaurants = restaurants.filter( Q(name__icontains=query) | Q(description__icontains=query))
     context = {
-        "restaurants":Restaurant.objects.all()
+        "restaurants": restaurants,
     }
     return render(request, 'list.html', context)
+
 
 
 def restaurant_detail(request, restaurant_id):
@@ -117,3 +131,5 @@ def restaurant_delete(request, restaurant_id):
         return redirect('no-access')
     restaurant_obj.delete()
     return redirect('restaurant-list')
+
+    
